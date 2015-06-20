@@ -1,0 +1,30 @@
+{
+  "name": "ngVimeo",
+  "version": "0.0.1",
+  "authors": [
+    "Armen Kesablyan <armen@twoowl.com>"
+  ],
+  "description": "Angular Vimeo Module.",
+  "main": "src/ngVimeo.js",
+  "keywords": [
+    "Angular",
+    "Vimeo",
+    "Video",
+    "Player",
+    "HTML5",
+    "ngVimeo",
+    "ngVimeoPlayer"
+  ],
+  "license": "MIT",
+  "homepage": "http://www.twoowl.com",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.4.1"
+  }
+}
