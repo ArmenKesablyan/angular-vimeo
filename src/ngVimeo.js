@@ -6,4 +6,4 @@
 
 
 
-angular.module('ngVimeo', []);
+angular.module('ngVimeo', ['ngVimeo.player']);
