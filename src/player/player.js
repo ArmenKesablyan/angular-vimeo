@@ -9,6 +9,7 @@
 
 angular.module('ngVimeo.player', [])
 
+
 /**
  * The embed player Uri. The format comes as follows
  * //player.vimeo.com/video/VIDEO_ID?PARAMETER=VALUE. The parameters include:
@@ -27,7 +28,15 @@ angular.module('ngVimeo.player', [])
  * portrait: Show the user’s portrait on the video. Defaults to 1.
  * title: Show the title on the video. Defaults to 1.
  */
-  .constant('playerBaseURL', 'https://player.vimeo.com/video/')
+  .constant('playerBaseURI', 'https://player.vimeo.com/video/')
+
+
+/**
+ * Configure vimeo URL as a trusted host to provide content.
+ */
+  .config(function ($sceDelegateProvider, playerBaseURI) {
+    $sceDelegateProvider.resourceUrlWhitelist([playerBaseURI + '**']);
+  })
 
 
 /**
@@ -38,7 +47,7 @@ angular.module('ngVimeo.player', [])
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage}
  */
   .factory('playerService', function ($window) {
-
+    return {}
   })
 
 
@@ -67,10 +76,15 @@ angular.module('ngVimeo.player', [])
       template: '<iframe src="{{embedUri}}" width="{{width}}" ' +
       'height="{{height}}" frameborder="0" webkitallowfullscreen ' +
       'mozallowfullscreen allowfullscreen></iframe>',
+      compile: function () {
+        return {
+          pre: function (scope) {
+            // Generate Vimeo video embed Uri
+            scope.embedUri = playerBaseURI + scope.videoId;
+          }
+        }
+      },
       link: function (scope, element) {
-
-        // Generate Vimeo video embed Uri
-        scope.embedUri = playerBaseURI + scope.videoId;
 
         // Clean up your directive. when it is removed.
         element.on('$destroy', function () {
