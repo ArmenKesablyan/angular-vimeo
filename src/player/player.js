@@ -333,8 +333,8 @@ angular.module('ngVimeo.player', [])
         scope.isPlaying = false;
         scope.isFinished = false;
         scope.seconds = 0;
-        scope.secondsLoaded = -1;
-        scope.secondsTotal = -1;
+        scope.secondsLoaded = 0;
+        scope.secondsTotal = 0;
 
         // Expose the iFrames post message capabilities.
         scope.contentWindow = element.children()[0].contentWindow;
