@@ -12,7 +12,13 @@ angular.module('ngVimeo.player', [])
 
 /**
  * The embed player Uri. The format comes as follows
- * //player.vimeo.com/video/VIDEO_ID?PARAMETER=VALUE. The parameters include:
+ * https://player.vimeo.com/video/VIDEO_ID?PARAMETER=VALUE. For a list of
+ * parameters please check out the parameters enumerator.
+ */
+  .constant('playerBaseURI', 'https://player.vimeo.com/video/')
+
+/**
+ * The player parameters enumerator
  * -----------------------------------------------------------------------------
  * autopause: Enables or disables pausing this video when another video is
  * played. Defaults to 1.
@@ -28,7 +34,17 @@ angular.module('ngVimeo.player', [])
  * portrait: Show the user’s portrait on the video. Defaults to 1.
  * title: Show the title on the video. Defaults to 1.
  */
-  .constant('playerBaseURI', 'https://player.vimeo.com/video/')
+  .constant('PLAYER_PARAMS', {
+    AUTO_PAUSE: 'autopause',
+    AUTO_PLAY: 'autoplay',
+    BADGE: 'badge',
+    BYLINE: 'byline',
+    COLOR: 'color',
+    LOOP: 'loop',
+    PLAYER_ID: 'player_id',
+    PORTRAIT: 'portrait',
+    TITLE: 'title'
+  })
 
 
 /**
@@ -54,7 +70,8 @@ angular.module('ngVimeo.player', [])
 /**
  * The directive to inject a vimeo player in your application.
  */
-  .directive('vimeoPlayer', function (playerService, playerBaseURI) {
+  .directive('vimeoPlayer', function (playerService, playerBaseURI,
+                                      PLAYER_PARAMS) {
     return {
       restrict: 'E',
       scope: {
@@ -79,8 +96,62 @@ angular.module('ngVimeo.player', [])
       compile: function () {
         return {
           pre: function (scope) {
+            var params = [];
+
+            // Check to see if the autopause attribute has been set.
+            if (angular.isDefined(scope.autoPause)) {
+              params.push(PLAYER_PARAMS.AUTO_PAUSE + '=' + scope.autoPause);
+            }
+
+            // Check to see if the autoplay attribute has been set.
+            if (angular.isDefined(scope.autoPlay)) {
+              params.push(PLAYER_PARAMS.AUTO_PLAY + '=' + scope.autoPlay);
+            }
+
+            // Check to see if the badge attribute has been set.
+            if (angular.isDefined(scope.showBadge)) {
+              params.push(PLAYER_PARAMS.BADGE + '=' + scope.showBadge);
+            }
+
+            // Check to see if the byline attribute has been set.
+            if (angular.isDefined(scope.showByline)) {
+              params.push(PLAYER_PARAMS.BYLINE + '=' + scope.showByline);
+            }
+
+            // Check to see if the color attribute has been set.
+            if (angular.isDefined(scope.color)) {
+              params.push(PLAYER_PARAMS.COLOR + '=' + scope.color);
+            }
+
+            // Check to see if the color attribute has been set.
+            if (angular.isDefined(scope.color)) {
+              params.push(PLAYER_PARAMS.COLOR + '=' + scope.color);
+            }
+
+            // Check to see if the loop attribute has been set.
+            if (angular.isDefined(scope.loop)) {
+              params.push(PLAYER_PARAMS.LOOP + '=' + scope.loop);
+            }
+
+            // Check to see if the loop attribute has been set.
+            if (angular.isDefined(scope.loop)) {
+              params.push(PLAYER_PARAMS.LOOP + '=' + scope.loop);
+            }
+
+            // Check to see if the portrait attribute has been set.
+            if (angular.isDefined(scope.showPortrait)) {
+              params.push(PLAYER_PARAMS.PORTRAIT + '=' + scope.showPortrait);
+            }
+
+            // Check to see if the title attribute has been set.
+            if (angular.isDefined(scope.showTitle)) {
+              params.push(PLAYER_PARAMS.PORTRAIT + '=' + scope.showTitle);
+            }
+
             // Generate Vimeo video embed Uri
-            scope.embedUri = playerBaseURI + scope.videoId;
+            scope.embedUri = playerBaseURI + scope.videoId + '?' +
+              params.join('&');
+
           }
         }
       },
