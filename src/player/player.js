@@ -28,15 +28,15 @@ angular.module('ngVimeo.player', [])
  * autopause: Enables or disables pausing this video when another video is
  * played. Defaults to 1.
  * autoplay: Play the video automatically on load. Defaults to 0. Note that
- * this won’t work on some devices.
+ * this won't work on some devices.
  * badge: Enables or disables the badge on the video. Defaults to 1.
- * byline: Show the user’s byline on the video. Defaults to 1.
+ * byline: Show the user's byline on the video. Defaults to 1.
  * color: Specify the color of the video controls. Defaults to 00adef. Make
- * sure that you don’t include the #.
+ * sure that you don't include the #.
  * loop:  Play the video again when it reaches the end. Defaults to 0.
  * player_id: A unique id for the player that will be passed back with all
  * Javascript API responses.
- * portrait: Show the user’s portrait on the video. Defaults to 1.
+ * portrait: Show the user's portrait on the video. Defaults to 1.
  * title: Show the title on the video. Defaults to 1.
  */
   .constant('PLAYER_PARAMS', {
