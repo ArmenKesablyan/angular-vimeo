@@ -10,9 +10,20 @@
   <meta name="author" content="Armen Kesablyan (armen@twoowl.com)">
 </head>
 <body ng-app="ngVimeo">
-<vimeo-player width="360" height="240" is-ready="isReady"
-              video-id="76979871"></vimeo-player>
+<vimeo-player width="360" height="240"
+              is-ready="isReady"
+              is-playing="isPlaying"
+              is-finished="isFinished"
+              seconds="seconds"
+              video-id="98741946"
+              seconds-loaded="secondsLoaded"
+              seconds-total="secondsTotal"></vimeo-player>
 <div>Vimeo Player is Ready: {{isReady}}</div>
+<div>Vimeo Player is Playing: {{isPlaying}}</div>
+<div>Vimeo Player is Finsihed: {{isFinished}}</div>
+<div>Vimeo Player is at: {{seconds}}</div>
+<div>Vimeo Player has loaded: {{secondsLoaded}} out of {{secondsTotal}}</div>
+
 <script src="../bower_components/angular/angular.js"></script>
 <script src="../src/ngVimeo.js"></script>
 <script src="../src/player/player.js"></script>
