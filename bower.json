@@ -5,7 +5,7 @@
     "Armen Kesablyan <armen@twoowl.com>"
   ],
   "description": "Angular Vimeo Module.",
-  "main": "src/ngVimeo.js",
+  "main": "dist/ngVimeo.js",
   "keywords": [
     "Angular",
     "Vimeo",
