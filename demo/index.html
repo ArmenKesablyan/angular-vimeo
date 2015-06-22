@@ -10,9 +10,9 @@
   <meta name="author" content="Armen Kesablyan (armen@twoowl.com)">
 </head>
 <body ng-app="ngVimeo">
-
-<vimeo-player width="360" height="240" video-id="76979871"></vimeo-player>
-
+<vimeo-player width="360" height="240" is-ready="isReady"
+              video-id="76979871"></vimeo-player>
+<div>Vimeo Player is Ready: {{isReady}}</div>
 <script src="../bower_components/angular/angular.js"></script>
 <script src="../src/ngVimeo.js"></script>
 <script src="../src/player/player.js"></script>
