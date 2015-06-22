@@ -40,6 +40,7 @@ angular.module('ngVimeo.player', [])
  * title: Show the title on the video. Defaults to 1.
  */
   .constant('PLAYER_PARAMS', {
+    API: 'api',
     AUTO_PAUSE: 'autopause',
     AUTO_PLAY: 'autoplay',
     BADGE: 'badge',
@@ -134,6 +135,41 @@ angular.module('ngVimeo.player', [])
       players[playerScope.playerId] = playerScope;
     };
 
+
+    /**
+     * Set the origination location of the communication.
+     * @type {string}
+     */
+    var playerOrigin = '*';
+
+
+    /**
+     * Once the video player is ready, we assign events we listen to from the
+     * vimeo video player.
+     * @param contentWindow
+     */
+    var initializePlayer = function (contentWindow) {
+      contentWindow.postMessage(JSON.stringify({
+        method: 'addEventListener',
+        value: PLAYER_EVENTS.PLAY
+      }), playerOrigin);
+
+      contentWindow.postMessage(JSON.stringify({
+        method: 'addEventListener',
+        value: PLAYER_EVENTS.PAUSE
+      }), playerOrigin);
+
+      contentWindow.postMessage(JSON.stringify({
+        method: 'addEventListener',
+        value: PLAYER_EVENTS.LOAD_PROGRESS
+      }), playerOrigin);
+
+      contentWindow.postMessage(JSON.stringify({
+        method: 'addEventListener',
+        value: PLAYER_EVENTS.PLAY_PROGRESS
+      }), playerOrigin);
+    };
+
     /**
      * When the window and the content frame communicate, they will go through
      * this method.
@@ -146,14 +182,37 @@ angular.module('ngVimeo.player', [])
         return false;
       }
 
+      if (playerOrigin === '*') {
+        playerOrigin = event.origin;
+      }
+
       var data = JSON.parse(event.data);
+      var playerScope = players[data.player_id];
 
       switch (data.event) {
         case PLAYER_EVENTS.READY:
-          players[data.player_id].isReady = true;
-          players[data.player_id].$apply();
+          initializePlayer(playerScope.contentWindow);
+          playerScope.isReady = true;
+          break;
+        case PLAYER_EVENTS.PLAY:
+          playerScope.isPlaying = true;
+          break;
+        case PLAYER_EVENTS.PAUSE:
+          playerScope.isPlaying = false;
+          break;
+        case PLAYER_EVENTS.LOAD_PROGRESS:
+          playerScope.secondsLoaded = data.data.seconds;
+          playerScope.secondsTotal = data.data.duration;
+          break;
+        case PLAYER_EVENTS.PLAY_PROGRESS:
+          playerScope.seconds = data.data.seconds;
+          break;
+        case PLAYER_EVENTS.FINISH:
+          playerScope.isFinished = true;
           break;
       }
+
+      playerScope.$apply();
 
     };
 
@@ -175,21 +234,24 @@ angular.module('ngVimeo.player', [])
  */
   .directive('vimeoPlayer', function (playerService, playerBaseURI,
                                       PLAYER_PARAMS) {
-
     return {
       restrict: 'E',
       scope: {
         autoPause: '@?',
         autoPlay: '@?',
-        showBadge: '@?',
-        showByline: '@?',
         color: '@?',
         height: '@',
+        isFinished: '=',
         isPlaying: '=',
         isReady: '=',
         loop: '@?',
         playerId: '@?',
         videoId: '@',
+        seconds: '=',
+        secondsLoaded: '=',
+        secondsTotal: '=',
+        showBadge: '@?',
+        showByline: '@?',
         showPortrait: '@?',
         showTitle: '@?',
         width: '@'
@@ -201,6 +263,9 @@ angular.module('ngVimeo.player', [])
       link: function (scope, element) {
 
         var params = [];
+
+        // Enable the API on the player.
+        params.push(PLAYER_PARAMS.API + '=1');
 
         // Check to see if the user has set a player Id. If not set one.
         if (!angular.isDefined(scope.playerId)) {
@@ -263,7 +328,16 @@ angular.module('ngVimeo.player', [])
         scope.embedUri = playerBaseURI + scope.videoId + '?' +
           params.join('&');
 
+        // Set default values.
         scope.isReady = false;
+        scope.isPlaying = false;
+        scope.isFinished = false;
+        scope.seconds = 0;
+        scope.secondsLoaded = -1;
+        scope.secondsTotal = -1;
+
+        // Expose the iFrames post message capabilities.
+        scope.contentWindow = element.children()[0].contentWindow;
 
         // After the link process we register our player.
         playerService.registerPlayer(scope);
