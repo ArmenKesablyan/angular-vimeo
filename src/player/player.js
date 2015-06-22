@@ -18,6 +18,11 @@ angular.module('ngVimeo.player', [])
   .constant('playerBaseURI', 'https://player.vimeo.com/video/')
 
 /**
+ * Use to test the origin of a message received.
+ */
+  .constant('originExpression', /^https?:\/\/player.vimeo.com/)
+
+/**
  * The player parameters enumerator
  * -----------------------------------------------------------------------------
  * autopause: Enables or disables pausing this video when another video is
@@ -48,6 +53,37 @@ angular.module('ngVimeo.player', [])
 
 
 /**
+ * The player events returned enumerator.
+ * -----------------------------------------------------------------------------
+ * READY: Fired automatically when the player is ready to accept commands.
+ * LOAD_PROGRESS: Fired as the video is loading. Includes the percent loaded
+ *    and the duration of the video. This also includes bytes loaded and bytes
+ *    total in the Flash player.
+ * PLAY_PROGRESS: Fired as the video is playing. Includes seconds, percentage
+ *    played, and the total duration.
+ * PLAY: Fired when the video begins to play.
+ * PAUSE: Fired when the video pauses.
+ * FINISH: Fires when the video playback reaches the end.
+ * SEEK: Fired when the user seeks. Includes seconds and percentage.
+ */
+  .constant('PLAYER_EVENTS', {
+    READY: 'ready',
+    LOAD_PROGRESS: 'loadProgress',
+    PLAY_PROGRESS: 'playProgress',
+    PLAY: 'play',
+    PAUSE: 'pause',
+    FINISH: 'finish',
+    SEEK: 'seek'
+  })
+
+
+/**
+ * This constant is used to generate an Id for a player when non is passed.
+ */
+  .constant('generateIdPrefix', 'VimeoPlayer')
+
+
+/**
  * Configure vimeo URL as a trusted host to provide content.
  */
   .config(function ($sceDelegateProvider, playerBaseURI) {
@@ -62,8 +98,75 @@ angular.module('ngVimeo.player', [])
  * look into the MDN Documentation:
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage}
  */
-  .factory('playerService', function ($window) {
-    return {}
+  .factory('playerService', function ($window, originExpression,
+                                      PLAYER_EVENTS, generateIdPrefix) {
+
+    /**
+     * The collection of players registered to the service.
+     * @type {Object}
+     */
+    var players = {};
+
+    /**
+     * The number of players registered players.
+     * @type {number}
+     */
+    var playerRegisterCount = 0;
+
+    /**
+     * Generates a unique player Id to communicate with.
+     * @returns {string}
+     */
+    var generatePlayerId = function () {
+      playerRegisterCount += 1;
+      // TODO: When generating an Id there is a possibility that a user might
+      //    have created one and will overwrite the registered player
+      return generateIdPrefix + playerRegisterCount;
+    };
+
+    /**
+     * Register the vimeo player with the player service. When events come from
+     * vimeo with the matching player id, specific values will update.
+     * @param playerScope {Object} The scope of the player being registered.
+     */
+    var registerPlayer = function (playerScope) {
+      // Register the Id of the current scope at hand.
+      players[playerScope.playerId] = playerScope;
+    };
+
+    /**
+     * When the window and the content frame communicate, they will go through
+     * this method.
+     * @param event
+     * @returns {boolean}
+     */
+    var messageReceived = function (event) {
+      // This statement validates to see if the message is coming from Vimeo.
+      if (!(originExpression).test(event.origin)) {
+        return false;
+      }
+
+      var data = JSON.parse(event.data);
+
+      switch (data.event) {
+        case PLAYER_EVENTS.READY:
+          players[data.player_id].isReady = true;
+          players[data.player_id].$apply();
+          break;
+      }
+
+    };
+
+    angular.element($window).on('message', messageReceived);
+
+    /**
+     * Public methods of the service.
+     */
+    return {
+      generatePlayerId: generatePlayerId,
+      registerPlayer: registerPlayer
+    }
+
   })
 
 
@@ -72,6 +175,7 @@ angular.module('ngVimeo.player', [])
  */
   .directive('vimeoPlayer', function (playerService, playerBaseURI,
                                       PLAYER_PARAMS) {
+
     return {
       restrict: 'E',
       scope: {
@@ -90,72 +194,79 @@ angular.module('ngVimeo.player', [])
         showTitle: '@?',
         width: '@'
       },
-      template: '<iframe src="{{embedUri}}" width="{{width}}" ' +
+      template: '<iframe ng-src="{{embedUri}}" width="{{width}}" ' +
       'height="{{height}}" frameborder="0" webkitallowfullscreen ' +
       'mozallowfullscreen allowfullscreen></iframe>',
-      compile: function () {
-        return {
-          pre: function (scope) {
-            var params = [];
 
-            // Check to see if the autopause attribute has been set.
-            if (angular.isDefined(scope.autoPause)) {
-              params.push(PLAYER_PARAMS.AUTO_PAUSE + '=' + scope.autoPause);
-            }
-
-            // Check to see if the autoplay attribute has been set.
-            if (angular.isDefined(scope.autoPlay)) {
-              params.push(PLAYER_PARAMS.AUTO_PLAY + '=' + scope.autoPlay);
-            }
-
-            // Check to see if the badge attribute has been set.
-            if (angular.isDefined(scope.showBadge)) {
-              params.push(PLAYER_PARAMS.BADGE + '=' + scope.showBadge);
-            }
-
-            // Check to see if the byline attribute has been set.
-            if (angular.isDefined(scope.showByline)) {
-              params.push(PLAYER_PARAMS.BYLINE + '=' + scope.showByline);
-            }
-
-            // Check to see if the color attribute has been set.
-            if (angular.isDefined(scope.color)) {
-              params.push(PLAYER_PARAMS.COLOR + '=' + scope.color);
-            }
-
-            // Check to see if the color attribute has been set.
-            if (angular.isDefined(scope.color)) {
-              params.push(PLAYER_PARAMS.COLOR + '=' + scope.color);
-            }
-
-            // Check to see if the loop attribute has been set.
-            if (angular.isDefined(scope.loop)) {
-              params.push(PLAYER_PARAMS.LOOP + '=' + scope.loop);
-            }
-
-            // Check to see if the loop attribute has been set.
-            if (angular.isDefined(scope.loop)) {
-              params.push(PLAYER_PARAMS.LOOP + '=' + scope.loop);
-            }
-
-            // Check to see if the portrait attribute has been set.
-            if (angular.isDefined(scope.showPortrait)) {
-              params.push(PLAYER_PARAMS.PORTRAIT + '=' + scope.showPortrait);
-            }
-
-            // Check to see if the title attribute has been set.
-            if (angular.isDefined(scope.showTitle)) {
-              params.push(PLAYER_PARAMS.PORTRAIT + '=' + scope.showTitle);
-            }
-
-            // Generate Vimeo video embed Uri
-            scope.embedUri = playerBaseURI + scope.videoId + '?' +
-              params.join('&');
-
-          }
-        }
-      },
       link: function (scope, element) {
+
+        var params = [];
+
+        // Check to see if the user has set a player Id. If not set one.
+        if (!angular.isDefined(scope.playerId)) {
+          // The user has not created one and so we must generate an Id.
+          scope.playerId = playerService.generatePlayerId();
+        }
+        params.push(PLAYER_PARAMS.PLAYER_ID + '=' + scope.playerId);
+
+        // Check to see if the autopause attribute has been set.
+        if (angular.isDefined(scope.autoPause)) {
+          params.push(PLAYER_PARAMS.AUTO_PAUSE + '=' + scope.autoPause);
+        }
+
+        // Check to see if the autoplay attribute has been set.
+        if (angular.isDefined(scope.autoPlay)) {
+          params.push(PLAYER_PARAMS.AUTO_PLAY + '=' + scope.autoPlay);
+        }
+
+        // Check to see if the badge attribute has been set.
+        if (angular.isDefined(scope.showBadge)) {
+          params.push(PLAYER_PARAMS.BADGE + '=' + scope.showBadge);
+        }
+
+        // Check to see if the byline attribute has been set.
+        if (angular.isDefined(scope.showByline)) {
+          params.push(PLAYER_PARAMS.BYLINE + '=' + scope.showByline);
+        }
+
+        // Check to see if the color attribute has been set.
+        if (angular.isDefined(scope.color)) {
+          params.push(PLAYER_PARAMS.COLOR + '=' + scope.color);
+        }
+
+        // Check to see if the color attribute has been set.
+        if (angular.isDefined(scope.color)) {
+          params.push(PLAYER_PARAMS.COLOR + '=' + scope.color);
+        }
+
+        // Check to see if the loop attribute has been set.
+        if (angular.isDefined(scope.loop)) {
+          params.push(PLAYER_PARAMS.LOOP + '=' + scope.loop);
+        }
+
+        // Check to see if the loop attribute has been set.
+        if (angular.isDefined(scope.loop)) {
+          params.push(PLAYER_PARAMS.LOOP + '=' + scope.loop);
+        }
+
+        // Check to see if the portrait attribute has been set.
+        if (angular.isDefined(scope.showPortrait)) {
+          params.push(PLAYER_PARAMS.PORTRAIT + '=' + scope.showPortrait);
+        }
+
+        // Check to see if the title attribute has been set.
+        if (angular.isDefined(scope.showTitle)) {
+          params.push(PLAYER_PARAMS.PORTRAIT + '=' + scope.showTitle);
+        }
+
+        // Generate Vimeo video embed Uri
+        scope.embedUri = playerBaseURI + scope.videoId + '?' +
+          params.join('&');
+
+        scope.isReady = false;
+
+        // After the link process we register our player.
+        playerService.registerPlayer(scope);
 
         // Clean up your directive. when it is removed.
         element.on('$destroy', function () {
