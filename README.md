@@ -10,7 +10,7 @@ bower install angular-vimeo --save
 ```
 
 ## Demonstration
-Checkout the [demo](http://armenkesablyan.github.io/angular-vimeo) page.
+Checkout the [demo](http://armenkesablyan.github.io/angular-vimeo/demo) page.
 Since this is relatively new all there is now is the `<vimeo-player>` directive.
 
 
@@ -45,4 +45,4 @@ following attributes can be applied:
 ## Release Notes
 #### 0.0.1 - Initial Release (June 23, 2015)
 * Introduced `<vimeo-player>` directive.
-* Introduced a [demo](http://armenkesablyan.github.io/angular-vimeo) page.
+* Introduced a [demo](http://armenkesablyan.github.io/angular-vimeo/demo) page.
