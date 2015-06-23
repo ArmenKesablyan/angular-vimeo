@@ -19,10 +19,11 @@ Since this is relatively new all there is now is the `<vimeo-player>` directive.
 The Vimeo Player is a directive that can be used to run the vimeo player on your
 angular application. To use the player just add the tag `<vimeo-player>`. The
 following attributes can be applied:
+*Only `video-id` attribute is required to get it going*
 
 | Attribute | Type | Description | Default |
 | --------- | ---- | ----------- | ------- |
-| **videoId** | _number_ | Video ID of the displayed video from Vimeo. | |
+| **video-id** | _number_ | Video ID of the displayed video from Vimeo. | |
 | auto-pause | _number_ | Enables or disables pausing a video when another video is playing | 1
 | auto-play | _number_ | Plays the video automatically on load. | 0 |
 | color | _string_ | Specify the color of the controls | 00adef |
