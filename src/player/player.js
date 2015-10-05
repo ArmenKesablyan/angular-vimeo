@@ -88,7 +88,7 @@ angular.module('ngVimeo.player', [])
  * Configure vimeo URL as a trusted host to provide content.
  */
   .config(function ($sceDelegateProvider, playerBaseURI) {
-    $sceDelegateProvider.resourceUrlWhitelist([playerBaseURI + '**']);
+    $sceDelegateProvider.resourceUrlWhitelist(['self', playerBaseURI + '**']);
   })
 
 
@@ -149,24 +149,29 @@ angular.module('ngVimeo.player', [])
      * @param contentWindow
      */
     var initializePlayer = function (contentWindow) {
-      contentWindow.postMessage(JSON.stringify({
+      contentWindow.postMessage(angular.toJson({
         method: 'addEventListener',
         value: PLAYER_EVENTS.PLAY
       }), playerOrigin);
 
-      contentWindow.postMessage(JSON.stringify({
+      contentWindow.postMessage(angular.toJson({
         method: 'addEventListener',
         value: PLAYER_EVENTS.PAUSE
       }), playerOrigin);
 
-      contentWindow.postMessage(JSON.stringify({
+      contentWindow.postMessage(angular.toJson({
         method: 'addEventListener',
         value: PLAYER_EVENTS.LOAD_PROGRESS
       }), playerOrigin);
 
-      contentWindow.postMessage(JSON.stringify({
+      contentWindow.postMessage(angular.toJson({
         method: 'addEventListener',
         value: PLAYER_EVENTS.PLAY_PROGRESS
+      }), playerOrigin);
+
+      contentWindow.postMessage(angular.toJson({
+        method: 'addEventListener',
+        value: PLAYER_EVENTS.FINISH
       }), playerOrigin);
     };
 
@@ -299,16 +304,6 @@ angular.module('ngVimeo.player', [])
           params.push(PLAYER_PARAMS.COLOR + '=' + scope.color);
         }
 
-        // Check to see if the color attribute has been set.
-        if (angular.isDefined(scope.color)) {
-          params.push(PLAYER_PARAMS.COLOR + '=' + scope.color);
-        }
-
-        // Check to see if the loop attribute has been set.
-        if (angular.isDefined(scope.loop)) {
-          params.push(PLAYER_PARAMS.LOOP + '=' + scope.loop);
-        }
-
         // Check to see if the loop attribute has been set.
         if (angular.isDefined(scope.loop)) {
           params.push(PLAYER_PARAMS.LOOP + '=' + scope.loop);
@@ -317,11 +312,6 @@ angular.module('ngVimeo.player', [])
         // Check to see if the portrait attribute has been set.
         if (angular.isDefined(scope.showPortrait)) {
           params.push(PLAYER_PARAMS.PORTRAIT + '=' + scope.showPortrait);
-        }
-
-        // Check to see if the title attribute has been set.
-        if (angular.isDefined(scope.showTitle)) {
-          params.push(PLAYER_PARAMS.PORTRAIT + '=' + scope.showTitle);
         }
 
         // Generate Vimeo video embed Uri
